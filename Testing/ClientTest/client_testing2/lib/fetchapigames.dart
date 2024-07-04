@@ -5,7 +5,7 @@ class Game {
   final int id;
   final String name;
   final String genre;
-  final String imageUrl;
+  final String imageBase64;
   final String description;
   final DateTime createdAt;
 
@@ -13,7 +13,7 @@ class Game {
     required this.id,
     required this.name,
     required this.genre,
-    required this.imageUrl,
+    required this.imageBase64,
     required this.description,
     required this.createdAt,
   });
@@ -24,7 +24,7 @@ class Game {
       id: json['id_game'],
       name: json['nama_game'],
       genre: json['genre_game'],
-      imageUrl: json['images_game'],
+      imageBase64: json['images_game'],
       description: json['descriptions_game'],
       createdAt: DateTime.parse(json['created_at']),
     );
