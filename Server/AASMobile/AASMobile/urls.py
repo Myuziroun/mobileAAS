@@ -17,11 +17,21 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from myaap.views import *
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/user/', UserModelAPIView.as_view(), name='user-list'),
     path('api/games/', gamesModelAPIView.as_view(), name='game-list'),
     path('api/games/<int:pk>', gamesModelAPIView.as_view(), name='game-detail' ),
-    path('api/auth/login/', UserLoginAPIView.as_view())
+    path('api/auth/login/', UserLoginAPIView.as_view()),
+    path('api/auth/register/', RegisterUserModelAPIView.as_view()),
+    path('api/user-details/', UserDetailAPIView.as_view()),
+    path('api/token/',CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/',TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/generate-token/', generate_token, name='generete_token')
+
 ]

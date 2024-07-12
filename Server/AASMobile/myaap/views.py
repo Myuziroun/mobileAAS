@@ -1,16 +1,50 @@
 from django.http import Http404
-from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Users, Games, detail_user
-from .serializer import UserModelSerializer, GamesModelSerializer, detailUsersModelSerializer, UserRegistrasiModelSerializer, UserUpdateModelSerializer, UserLoginSerializer
-from rest_framework.authtoken.views import ObtainAuthToken
-from rest_framework.authtoken.models import Token
-from django.contrib.auth import authenticate
+from .serializer import UserModelSerializer, GamesModelSerializer, detailUsersModelSerializer, UserRegistrasiModelSerializer, UserUpdateModelSerializer, UserLoginSerializer, CustomTokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.decorators import api_view
+from rest_framework_simplejwt.views import TokenObtainPairView
+
 
 # Create your views here.
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
+
+
+@api_view(['POST'])
+def generate_token(request):
+    username = request.data.get('nama')
+    password = request.data.get('password')
+    user = Users.objects.filter(nama = username).first()
+    if user is None or not user.check_password(password):
+        return Response({'error ':'Invalid Credentials'}, status=400)
+    
+    refresh = RefreshToken.for_user(user)
+    return Response({
+        'refresh' : str(refresh),
+        'access': str(refresh.access_token)
+    })
+
+
+class UserDetailAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        try:
+            details_user = detail_user.objects.filter(id_user=user.id_user)
+            if not details_user.exists():
+                return Response({'error': 'user_not_found'}, status=status.HTTP_404_NOT_FOUND)
+        except AttributeError:
+            return Response({'error': 'user_not_found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = detailUsersModelSerializer(details_user, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
 
 class UserModelAPIView(APIView):
     def get(self, request):
@@ -50,31 +84,27 @@ class getUserByIDModelAPIView(APIView):
 
 class UserLoginAPIView(APIView):
     serializer_class = UserLoginSerializer
+    permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        
         user = serializer.validated_data['users']
-        
-        # Generate token (JWT) using simplejwt
         refresh = RefreshToken.for_user(user)
         token = {
             'refresh': str(refresh),
             'access': str(refresh.access_token),
         }
-
-        # Mengambil data pengguna yang diperlukan untuk respons
         user_data = {
-            'id': user.id_user,  # Sesuaikan dengan nama atribut yang sesuai
+            'id': user.id_user,  
             'nama': user.nama,
             'email': user.email,
             'created_at': user.created_at,
-            # tambahkan atribut lain yang diperlukan
         }
 
         return Response({'token': token, 'user': user_data}, status=status.HTTP_200_OK)
 class RegisterUserModelAPIView(APIView):
+    permission_classes = [AllowAny]
     def post(self, request):
         serializer = UserRegistrasiModelSerializer(data=request.data)
         if serializer.is_valid():
