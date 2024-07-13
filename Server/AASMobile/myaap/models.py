@@ -25,6 +25,7 @@ class Users(models.Model):
     password = models.CharField(max_length=200)
     created_at = models.DateTimeField(auto_now_add=True)
     # updated_at = models.DateTimeField(auto_now=True)
+    username = models.CharField(max_length=150, unique=True)
 
     class Meta:
         managed = False

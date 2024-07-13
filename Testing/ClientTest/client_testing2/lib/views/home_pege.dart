@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:convert'; // Import untuk encoding base64
-import 'package:client_testing2/fetchapigames.dart';
+import 'package:client_testing2/api/api_games.dart';
 
 class Homepage extends StatefulWidget {
   final String token;
@@ -27,9 +27,7 @@ class _HomepageState extends State<Homepage> {
       appBar: AppBar(
         title: Text(
           'Daftar Game',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         backgroundColor: Colors.deepPurple,
       ),

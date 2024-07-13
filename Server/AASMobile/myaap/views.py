@@ -8,10 +8,11 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import api_view
 from rest_framework_simplejwt.views import TokenObtainPairView
+ 
 
 
 # Create your views here.
-class CustomTokenObtainPairView(TokenObtainPairView):
+class CustomTokenObtainPairView(TokenObtainPairView): 
     serializer_class = CustomTokenObtainPairSerializer
 
 
@@ -31,8 +32,8 @@ def generate_token(request):
 
 
 class UserDetailAPIView(APIView):
-    permission_classes = [IsAuthenticated]
-
+    # permission_classes = (IsAuthenticated)
+    
     def get(self, request):
         user = request.user
         try:
@@ -89,7 +90,7 @@ class UserLoginAPIView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['users']
+        user = serializer.validated_data['Users']
         refresh = RefreshToken.for_user(user)
         token = {
             'refresh': str(refresh),

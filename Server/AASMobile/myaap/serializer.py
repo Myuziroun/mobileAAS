@@ -4,7 +4,9 @@ from .models import Users, Games, detail_user, userManager
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.views import TokenObtainPairView
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import make_password,check_password
+from rest_framework.permissions import IsAuthenticated, AllowAny
+
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     nama = serializers.CharField(required=True)
@@ -53,12 +55,12 @@ class UserRegistrasiModelSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     class Meta:
         model = Users
-        fields = ['nama','email','password']
+        fields = ['username','password','nama','email']
     def create(self, validated_data):
         password = validated_data.pop('password', None)
         instance = self.Meta.model(**validated_data)
         if password is not None:
-            hashed_password = make_password(password)
+            hashed_password = make_password(password, hasher='bcrypt')
             instance.password = hashed_password
         instance.save()
         return instance
@@ -73,14 +75,16 @@ class UserLoginSerializer(serializers.Serializer):
 
         if email and password:
             try:
-                user = Users.objects.get(email=email, password=password)
+                user = Users.objects.get(email=email)
+                if check_password(password, user.password):
+                    data['Users'] = user
+                else :
+                    raise serializers.ValidationError('Email atau password salah 1')
                 # jika user ditemukan, return validated data
-                data['users'] = user
             except Users.DoesNotExist:
                 raise serializers.ValidationError("Email atau password salah")
         else:
             raise serializers.ValidationError("Email dan password harus diisi")
-
         return data
 
 
